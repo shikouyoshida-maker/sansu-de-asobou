@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>けいさんタイムアタック</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="さんすうで遊ぼう">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#fff6d6; --bg2:#ffe0ec;
+    --ink:#3a2c4a; --sub:#7a6a8a;
+    --pink:#ff5c8a; --orange:#ff9f1c; --yellow:#ffd23f; --green:#2ec4a6; --blue:#3a86ff; --purple:#8e5cf7;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"M PLUS Rounded 1c",system-ui,sans-serif;color:var(--ink);
+    background:linear-gradient(160deg,var(--bg1),var(--bg2));
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    overflow-x:hidden; user-select:none; -webkit-user-select:none;
+  }
+  .wrap{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:16px}
+  .screen{display:none;flex:1;flex-direction:column}
+  .screen.on{display:flex}
+  h1{font-weight:800;text-align:center;margin:12px 0 4px;font-size:34px;line-height:1.15;letter-spacing:1px}
+  h1 .t1{color:var(--pink)} h1 .t2{color:var(--blue)}
+  .lead{text-align:center;color:var(--sub);margin:0 0 16px;font-size:15px}
+  .card{background:var(--card);border-radius:22px;padding:16px;box-shadow:0 6px 0 rgba(58,44,74,.08),0 10px 24px rgba(58,44,74,.08);margin-bottom:14px}
+  .label{font-weight:800;font-size:15px;margin:0 0 10px}
+  .lv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .lvb{border:3px solid #eadff2;background:#faf7fd;border-radius:16px;padding:10px 2px;font:inherit;color:var(--ink);cursor:pointer}
+  .lvb b{display:block;font-size:14px}
+  .lvb small{display:block;font-size:11px;color:var(--sub);margin-top:2px}
+  .lvb.sel[data-l="low"]{background:var(--yellow);border-color:#f2b705}
+  .lvb.sel[data-l="high"]{background:var(--blue);border-color:#2560c4;color:#fff}
+  .lvb.sel[data-l="sp"]{background:var(--purple);border-color:#6b3ed1;color:#fff}
+  .lvb.sel small{color:inherit;opacity:.85}
+  .dans{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .dan{border:3px solid #eadff2;background:#faf7fd;border-radius:14px;padding:10px 0;font:inherit;font-weight:800;font-size:18px;color:var(--ink);cursor:pointer}
+  .dan small{display:block;font-size:11px;font-weight:500;color:var(--sub)}
+  .dan.sel{background:var(--yellow);border-color:#f2b705}
+  .dan.all{grid-column:span 5;font-size:16px}
+  .dan.nig.sel{background:var(--pink);border-color:#d63c69;color:#fff}
+  .dan.nig.sel small{color:#ffe0ec}
+  .note{font-size:13px;color:var(--sub);margin:8px 0 0}
+  .opts{display:flex;flex-direction:column;gap:8px}
+  .opt{display:flex;align-items:center;gap:10px;text-align:left;border:3px solid #eadff2;background:#faf7fd;border-radius:14px;padding:10px 12px;font:inherit;font-weight:800;font-size:15px;color:var(--ink);cursor:pointer}
+  .opt small{font-weight:500;color:var(--sub);font-size:12px;display:block}
+  .opt i{font-style:normal;flex:none;width:26px;height:26px;border-radius:8px;border:3px solid #d8cbe6;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff}
+  .opt.sel{border-color:var(--blue);background:#eef4ff}
+  .opt.sel i{background:var(--blue);border-color:var(--blue)}
+  #cfgSp .opt.sel{border-color:var(--purple);background:#f3edff}
+  #cfgSp .opt.sel i{background:var(--purple);border-color:var(--purple)}
+  .row{display:flex;gap:8px}
+  .seg{flex:1;border:3px solid #eadff2;background:#faf7fd;border-radius:14px;padding:10px 0;font:inherit;font-weight:800;font-size:16px;color:var(--ink);cursor:pointer}
+  .seg.sel{background:var(--green);border-color:#1f9f86;color:#fff}
+  .best{display:flex;justify-content:space-between;align-items:center;font-size:15px}
+  .best b{font-size:26px;color:var(--pink)}
+  .big{display:block;width:100%;border:none;border-radius:20px;padding:18px;font:inherit;font-weight:800;font-size:24px;color:#fff;
+    background:var(--pink);box-shadow:0 6px 0 #d63c69;cursor:pointer;margin-top:auto}
+  .big:active{transform:translateY(4px);box-shadow:0 2px 0 #d63c69}
+  .ghost{display:block;width:100%;background:none;border:none;font:inherit;color:var(--sub);font-size:15px;padding:12px;margin-top:6px;cursor:pointer;text-decoration:underline}
+
+  #count{align-items:center;justify-content:center}
+  #countNum{font-size:140px;font-weight:800;color:var(--pink);animation:pop .8s ease-out}
+  @keyframes pop{0%{transform:scale(2.2);opacity:0}40%{transform:scale(1);opacity:1}100%{transform:scale(.9);opacity:.9}}
+
+  .hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .pill{background:#fff;border-radius:999px;padding:6px 14px;font-weight:800;font-size:18px;box-shadow:0 3px 0 rgba(58,44,74,.08)}
+  .pill.time{color:var(--blue)} .pill.time.hurry{color:#fff;background:var(--pink);animation:beat .5s infinite}
+  @keyframes beat{50%{transform:scale(1.08)}}
+  .bar{height:12px;background:#fff;border-radius:99px;overflow:hidden;margin-bottom:14px}
+  .bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .2s linear}
+  .qbox{position:relative;background:#fff;border-radius:28px;padding:22px 10px 18px;text-align:center;box-shadow:0 8px 0 rgba(58,44,74,.08)}
+  .combo{height:26px;font-weight:800;color:var(--orange);font-size:20px}
+  .combo.fire{animation:pop .4s}
+  .q{font-size:64px;font-weight:800;letter-spacing:2px;line-height:1.1;white-space:nowrap}
+  .q.mid{font-size:46px;letter-spacing:1px}
+  .q.long{font-size:34px;letter-spacing:0}
+  .q .x{color:var(--pink);margin:0 6px}
+  .q .eq{color:var(--sub)}
+  .q sup{font-size:.55em;color:var(--purple)}
+  .hs{display:inline-block;font-size:54px;line-height:1.15;letter-spacing:6px;font-variant-numeric:tabular-nums}
+  .hs div{text-align:right}
+  .hs .r2{display:flex;justify-content:space-between;gap:16px}
+  .hs .x{color:var(--pink);letter-spacing:0;margin:0}
+  .hs .line{border-top:5px solid var(--ink);margin:4px 0 2px}
+  .hs .qm{color:var(--sub)}
+  .tag{display:inline-block;font-size:12px;font-weight:800;color:#fff;background:var(--blue);border-radius:99px;padding:2px 10px;margin-bottom:4px}
+  .reading{color:var(--sub);font-size:15px;min-height:22px;margin-top:6px;line-height:1.5}
+  .reading div{background:#fff7e0;border-radius:8px;padding:2px 8px;margin:3px auto 0;display:table;color:var(--ink)}
+  .shake{animation:shake .35s}
+  @keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+  .float{position:absolute;left:50%;top:10px;transform:translateX(-50%);font-weight:800;font-size:26px;pointer-events:none;animation:up .7s forwards}
+  @keyframes up{to{transform:translate(-50%,-50px);opacity:0}}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  .ch{border:none;border-radius:22px;padding:22px 0;font:inherit;font-weight:800;font-size:40px;color:#fff;cursor:pointer;touch-action:manipulation}
+  .choices.small .ch{font-size:30px;padding:24px 0}
+  .ch:nth-child(1){background:var(--blue);box-shadow:0 6px 0 #2560c4}
+  .ch:nth-child(2){background:var(--green);box-shadow:0 6px 0 #1f9f86}
+  .ch:nth-child(3){background:var(--orange);box-shadow:0 6px 0 #d97f00}
+  .ch:nth-child(4){background:var(--purple);box-shadow:0 6px 0 #6b3ed1}
+  .ch:active{transform:translateY(4px);box-shadow:none}
+  .ch.ok{outline:6px solid var(--yellow)}
+  .ch.ng{opacity:.35}
+  .ch:disabled{cursor:default}
+  .msg{text-align:center;min-height:30px;margin-top:12px;font-weight:800;font-size:20px}
+
+  .rtitle{text-align:center;font-size:26px;font-weight:800;margin:10px 0 0}
+  .rlv{text-align:center;color:var(--sub);font-size:14px;margin:2px 0 0}
+  .score{text-align:center;font-size:84px;font-weight:800;color:var(--pink);line-height:1}
+  .score small{font-size:22px;color:var(--ink)}
+  .record{text-align:center;font-weight:800;color:#fff;background:var(--orange);border-radius:999px;padding:6px 16px;margin:10px auto;display:none;animation:beat .8s infinite}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+  .stats div{background:#faf7fd;border-radius:14px;padding:8px 0;font-size:12px;color:var(--sub)}
+  .stats b{display:block;font-size:24px;color:var(--ink)}
+  .miss{display:flex;flex-wrap:wrap;gap:8px}
+  .miss span{background:#ffeef3;color:#c2264f;border-radius:10px;padding:6px 10px;font-weight:800;font-size:17px}
+  .none{color:var(--sub);font-size:15px}
+  .stars{text-align:center;font-size:40px;letter-spacing:6px;margin:6px 0}
+
+  .confetti{position:fixed;top:-20px;width:10px;height:14px;border-radius:3px;pointer-events:none;z-index:9;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.menuback{position:fixed;left:calc(10px + env(safe-area-inset-left));bottom:calc(10px + env(safe-area-inset-bottom));z-index:5;background:rgba(255,255,255,.92);border-radius:99px;padding:8px 14px;font-weight:800;font-size:14px;color:#6a6a8a;text-decoration:none;box-shadow:0 3px 8px rgba(0,0,0,.12)}
+</style>
+</head>
+<body>
+<a class="menuback" id="menuback" href="../">🏠 メニュー</a>
+<div class="wrap">
+
+  <!-- START -->
+  <section id="start" class="screen on">
+    <h1><span class="t1">けいさん</span><br><span class="t2">タイムアタック</span></h1>
+    <p class="lead">じかん内に なんもん とけるかな？</p>
+
+    <div class="card">
+      <p class="label">レベルを えらぼう</p>
+      <div class="lv" id="levels">
+        <button class="lvb" data-l="low"><b>ていがくねん</b><small>九九・たし算・ひき算</small></button>
+        <button class="lvb" data-l="high"><b>こうがくねん</b><small>ひっさん</small></button>
+        <button class="lvb" data-l="sp"><b>スペシャリスト</b><small>中1レベル</small></button>
+      </div>
+    </div>
+
+    <div id="cfgLow">
+      <div class="card">
+        <p class="label">なにを れんしゅうする？</p>
+        <div class="row" id="lowModes">
+          <button class="seg" data-m="kuku">九九</button>
+          <button class="seg" data-m="add">たしざん</button>
+          <button class="seg" data-m="sub">ひきざん</button>
+        </div>
+      </div>
+      <div id="lowAdd" class="card">
+        <p class="label">たしざんの しゅるい（いくつでも えらべるよ）</p>
+        <div class="opts" id="addOpts"></div>
+      </div>
+      <div id="lowSub" class="card">
+        <p class="label">ひきざんの しゅるい（いくつでも えらべるよ）</p>
+        <div class="opts" id="subOpts"></div>
+      </div>
+      <div id="lowKuku">
+      <div class="card">
+        <p class="label">れんしゅうする だん を えらぼう</p>
+        <div class="dans" id="dans"></div>
+      </div>
+      <div class="card">
+        <p class="label">にがてな だん（えらぶと おおめに でるよ）</p>
+        <div class="dans" id="nigate"></div>
+        <p class="note" id="nigNote"></p>
+      </div>
+      </div>
+    </div>
+
+    <div id="cfgHigh" class="card">
+      <p class="label">もんだいの しゅるい（いくつでも えらべるよ）</p>
+      <div class="opts" id="highOpts"></div>
+    </div>
+
+    <div id="cfgSp" class="card">
+      <p class="label">もんだいの しゅるい（いくつでも えらべるよ）</p>
+      <div class="opts" id="spOpts"></div>
+    </div>
+
+    <div class="card">
+      <p class="label">じかん</p>
+      <div class="row" id="times">
+        <button class="seg" data-t="30">30びょう</button>
+        <button class="seg" data-t="60">60びょう</button>
+        <button class="seg" data-t="90">90びょう</button>
+      </div>
+    </div>
+
+    <div class="card best">
+      <span>この せってい の<br>じこベスト</span>
+      <b id="bestNow">-</b>
+    </div>
+
+    <button class="big" id="go">スタート！</button>
+  </section>
+
+  <!-- COUNTDOWN -->
+  <section id="count" class="screen">
+    <div id="countNum">3</div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="screen">
+    <div class="hud">
+      <span class="pill" id="scoreNow">0てん</span>
+      <span class="pill time" id="timeNow">60</span>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="qbox" id="qbox">
+      <div class="combo" id="combo"></div>
+      <div class="q" id="q"></div>
+      <div class="reading" id="reading"></div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="msg" id="msg"></div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="result" class="screen">
+    <p class="rtitle">タイムアップ！</p>
+    <p class="rlv" id="rLv"></p>
+    <div class="stars" id="stars"></div>
+    <div class="score"><span id="rScore">0</span><small>てん</small></div>
+    <div class="record" id="record">🎉 じこベスト こうしん！</div>
+
+    <div class="card">
+      <div class="stats">
+        <div>せいかい<b id="rOk">0</b></div>
+        <div>せいかいりつ<b id="rRate">0%</b></div>
+        <div>さいだいコンボ<b id="rCombo">0</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="label" id="rMissLabel">まちがえた もんだい</p>
+      <div class="miss" id="rMiss"></div>
+    </div>
+
+    <button class="big" id="again">もういちど！</button>
+    <button class="ghost" id="toTop">せってい に もどる</button>
+  </section>
+
+</div>
+
+<script>
+(() => {
+  // ---------- storage (safe) ----------
+  const store = {
+    get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+    set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  };
+  let bests = store.get('kuku_bests', {});
+  let weak  = store.get('kuku_weak', {});   // "a-b": weight
+
+  // ---------- helpers ----------
+  const M = '−';                                   // マイナス記号
+  const fmt = n => n < 0 ? M + (-n) : String(n);
+  const par = n => n < 0 ? '(' + M + (-n) + ')' : String(n);
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+  const sgn = () => Math.random() < .5 ? -1 : 1;
+  const X = '<span class="x">×</span>';
+
+  // ---------- 九九の読み ----------
+  const yomi = {
+    1:{1:'いんいちが いち',2:'いんにが に',3:'いんさんが さん',4:'いんしが し',5:'いんごが ご',6:'いんろくが ろく',7:'いんしちが しち',8:'いんはちが はち',9:'いんくが く'},
+    2:{1:'にいちが に',2:'ににんが し',3:'にさんが ろく',4:'にしが はち',5:'にご じゅう',6:'にろく じゅうに',7:'にしち じゅうし',8:'にはち じゅうろく',9:'にく じゅうはち'},
+    3:{1:'さんいちが さん',2:'さんにが ろく',3:'さざんが く',4:'さんし じゅうに',5:'さんご じゅうご',6:'さぶろく じゅうはち',7:'さんしち にじゅういち',8:'さんぱ にじゅうし',9:'さんく にじゅうしち'},
+    4:{1:'しいちが し',2:'しにが はち',3:'しさん じゅうに',4:'しし じゅうろく',5:'しご にじゅう',6:'しろく にじゅうし',7:'ししち にじゅうはち',8:'しは さんじゅうに',9:'しく さんじゅうろく'},
+    5:{1:'ごいちが ご',2:'ごに じゅう',3:'ごさん じゅうご',4:'ごし にじゅう',5:'ごご にじゅうご',6:'ごろく さんじゅう',7:'ごしち さんじゅうご',8:'ごは しじゅう',9:'ごっく しじゅうご'},
+    6:{1:'ろくいちが ろく',2:'ろくに じゅうに',3:'ろくさん じゅうはち',4:'ろくし にじゅうし',5:'ろくご さんじゅう',6:'ろくろく さんじゅうろく',7:'ろくしち しじゅうに',8:'ろくは しじゅうはち',9:'ろっく ごじゅうし'},
+    7:{1:'しちいちが しち',2:'しちに じゅうし',3:'しちさん にじゅういち',4:'しちし にじゅうはち',5:'しちご さんじゅうご',6:'しちろく しじゅうに',7:'しちしち しじゅうく',8:'しちは ごじゅうろく',9:'しちく ろくじゅうさん'},
+    8:{1:'はちいちが はち',2:'はちに じゅうろく',3:'はちさん にじゅうし',4:'はちし さんじゅうに',5:'はちご しじゅう',6:'はちろく しじゅうはち',7:'はちしち ごじゅうろく',8:'はっぱ ろくじゅうし',9:'はっく しちじゅうに'},
+    9:{1:'くいちが く',2:'くに じゅうはち',3:'くさん にじゅうしち',4:'くし さんじゅうろく',5:'くご しじゅうご',6:'くろく ごじゅうし',7:'くしち ろくじゅうさん',8:'くは しちじゅうに',9:'くく はちじゅういち'}
+  };
+
+  // ---------- sound ----------
+  let ac = null;
+  function tone(freqs, dur=0.12, type='triangle', vol=0.15){
+    try{
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+      let t = ac.currentTime;
+      freqs.forEach(f => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = type; o.frequency.value = f;
+        g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur);
+        t += dur * 0.8;
+      });
+    }catch(e){}
+  }
+  const sfx = {
+    ok:   c => tone([660 + Math.min(c,10)*40, 990 + Math.min(c,10)*40], .09),
+    ng:   () => tone([220, 160], .16, 'square', .08),
+    tick: () => tone([880], .06, 'sine', .1),
+    go:   () => tone([523, 659, 784, 1047], .1),
+    end:  () => tone([784, 659, 523], .18),
+    rec:  () => tone([523, 659, 784, 1047, 1319], .12)
+  };
+
+  // ---------- levels ----------
+  const LEVELS = {
+    low:  { name:'ていがくねん（九九）',       wait:1300, stars:[30,18,8] },
+    high: { name:'こうがくねん（ひっさん）',   wait:2800, stars:[8,5,2]  },
+    sp:   { name:'スペシャリスト（中1レベル）', wait:2400, stars:[20,12,5] }
+  };
+  const HIGH_OPTS = [
+    ['21', '2けた × 1けた', 'れい：47×6（あんざん）'],
+    ['22', '2けた × 2けた', 'れい：47×23（ひっさん）'],
+    ['31', '3けた × 1けた', 'れい：352×4（ひっさん）']
+  ];
+  const ADD_OPTS = [
+    ['a1', '1けた ＋ 1けた（くりあがり なし）', 'れい：3＋4、5＋2'],
+    ['a2', 'くりあがり の ある たしざん',        'れい：8＋5、7＋6'],
+    ['a3', '2けたの たしざん',                  'れい：36＋7、45＋28（ひっさん）']
+  ];
+  const SUB_OPTS = [
+    ['s1', 'くりさがり なし',               'れい：9−4、18−5'],
+    ['s2', 'くりさがり の ある ひきざん',   'れい：13−8、15−7'],
+    ['s3', '2けたの ひきざん',             'れい：52−17（ひっさん）']
+  ];
+  const LOW_NAMES = { kuku:'九九', add:'たしざん', sub:'ひきざん' };
+  const SP_OPTS = [
+    ['pm',    '正負の数の かけ算',   'れい：(−6)×4、(−7)×(−8)'],
+    ['three', '3つの数の かけ算',    'れい：(−2)×3×(−4)'],
+    ['pow',   '累乗（るいじょう）',  'れい：(−3)²、−3²、(−2)³']
+  ];
+
+  // ---------- setup screen ----------
+  const $ = id => document.getElementById(id);
+  let level = store.get('kuku_level', 'low');
+  let selDans = new Set(store.get('kuku_dans', [2,3,4,5]));
+  let timeLimit = store.get('kuku_time', 60);
+  let nigate = new Set(store.get('kuku_nigate', []));
+  let highTypes = new Set(store.get('kuku_high', ['21','22','31']));
+  let spTypes = new Set(store.get('kuku_sp', ['pm','three','pow']));
+  let lowMode = store.get('kuku_lowmode', 'kuku');
+  let addTypes = new Set(store.get('kuku_add', ['a1','a2']));
+  let subTypes = new Set(store.get('kuku_sub', ['s1','s2']));
+  document.querySelectorAll('#lowModes .seg').forEach(b => {
+    b.onclick = () => { lowMode = b.dataset.m; renderSetup(); };
+  });
+
+  document.querySelectorAll('#levels .lvb').forEach(b => {
+    b.onclick = () => { level = b.dataset.l; renderSetup(); };
+  });
+
+  const dansEl = $('dans');
+  for (let d = 1; d <= 9; d++){
+    const b = document.createElement('button');
+    b.className = 'dan'; b.dataset.d = d;
+    b.innerHTML = d + '<small>のだん</small>';
+    b.onclick = () => { selDans.has(d) ? selDans.delete(d) : selDans.add(d); renderSetup(); };
+    dansEl.appendChild(b);
+  }
+  const allB = document.createElement('button');
+  allB.className = 'dan all'; allB.textContent = 'ぜんぶ（1〜9のだん）';
+  allB.onclick = () => {
+    if (selDans.size === 9) selDans = new Set([2]); else selDans = new Set([1,2,3,4,5,6,7,8,9]);
+    renderSetup();
+  };
+  dansEl.appendChild(allB);
+
+  function buildOpts(el, list, set){
+    list.forEach(([k, t, s]) => {
+      const b = document.createElement('button');
+      b.className = 'opt'; b.dataset.k = k;
+      b.innerHTML = `<i>✓</i><span>${t}<small>${s}</small></span>`;
+      b.onclick = () => { set.has(k) ? set.delete(k) : set.add(k); renderSetup(); };
+      el.appendChild(b);
+    });
+  }
+  buildOpts($('highOpts'), HIGH_OPTS, highTypes);
+  buildOpts($('spOpts'), SP_OPTS, spTypes);
+  buildOpts($('addOpts'), ADD_OPTS, addTypes);
+  buildOpts($('subOpts'), SUB_OPTS, subTypes);
+
+  document.querySelectorAll('#times .seg').forEach(b => {
+    b.onclick = () => { timeLimit = +b.dataset.t; renderSetup(); };
+  });
+
+  const keyOf = () => {
+    if (level === 'low' && lowMode === 'add') return 'add_' + [...addTypes].sort().join('') + '_' + timeLimit;
+    if (level === 'low' && lowMode === 'sub') return 'sub_' + [...subTypes].sort().join('') + '_' + timeLimit;
+    if (level === 'low') return [...selDans].sort().join('') + '_' + timeLimit;  // 前の記録と おなじ形
+    const set = level === 'high' ? highTypes : spTypes;
+    return level + '_' + [...set].sort().join('') + '_' + timeLimit;
+  };
+  const canStart = () => level === 'low'
+    ? (lowMode === 'add' ? addTypes.size : lowMode === 'sub' ? subTypes.size : selDans.size) > 0
+    : (level === 'high' ? highTypes.size : spTypes.size) > 0;
+
+  function renderNigate(){
+    const el = $('nigate'); el.innerHTML = '';
+    const ds = [...selDans].sort((a, b) => a - b);
+    ds.forEach(d => {
+      const b = document.createElement('button');
+      b.className = 'dan nig' + (nigate.has(d) ? ' sel' : '');
+      b.innerHTML = d + '<small>のだん</small>';
+      b.onclick = () => { nigate.has(d) ? nigate.delete(d) : nigate.add(d); renderSetup(); };
+      el.appendChild(b);
+    });
+    const n = ds.filter(d => nigate.has(d));
+    $('nigNote').textContent = !ds.length ? 'うえで だんを えらんでね'
+      : n.length ? n.join('・') + 'のだん が ほかの 3ばい でるよ' : 'えらばなくても だいじょうぶ';
+  }
+
+  function renderSetup(){
+    document.querySelectorAll('#levels .lvb').forEach(b => b.classList.toggle('sel', b.dataset.l === level));
+    $('cfgLow').style.display  = level === 'low'  ? '' : 'none';
+    $('cfgHigh').style.display = level === 'high' ? '' : 'none';
+    $('cfgSp').style.display   = level === 'sp'   ? '' : 'none';
+    document.querySelectorAll('#lowModes .seg').forEach(b => b.classList.toggle('sel', b.dataset.m === lowMode));
+    $('lowKuku').style.display = lowMode === 'kuku' ? '' : 'none';
+    $('lowAdd').style.display  = lowMode === 'add'  ? '' : 'none';
+    $('lowSub').style.display  = lowMode === 'sub'  ? '' : 'none';
+    document.querySelectorAll('#addOpts .opt').forEach(b => b.classList.toggle('sel', addTypes.has(b.dataset.k)));
+    document.querySelectorAll('#subOpts .opt').forEach(b => b.classList.toggle('sel', subTypes.has(b.dataset.k)));
+    store.set('kuku_lowmode', lowMode); store.set('kuku_add', [...addTypes]); store.set('kuku_sub', [...subTypes]);
+    document.querySelectorAll('.dan[data-d]').forEach(b => b.classList.toggle('sel', selDans.has(+b.dataset.d)));
+    allB.classList.toggle('sel', selDans.size === 9);
+    renderNigate();
+    document.querySelectorAll('#highOpts .opt').forEach(b => b.classList.toggle('sel', highTypes.has(b.dataset.k)));
+    document.querySelectorAll('#spOpts .opt').forEach(b => b.classList.toggle('sel', spTypes.has(b.dataset.k)));
+    document.querySelectorAll('#times .seg').forEach(b => b.classList.toggle('sel', +b.dataset.t === timeLimit));
+    const best = bests[keyOf()];
+    $('bestNow').textContent = best ? best + 'てん' : 'まだない';
+    $('go').disabled = !canStart();
+    $('go').style.opacity = canStart() ? 1 : .4;
+    store.set('kuku_level', level);
+    store.set('kuku_dans', [...selDans]); store.set('kuku_time', timeLimit);
+    store.set('kuku_nigate', [...nigate]);
+    store.set('kuku_high', [...highTypes]); store.set('kuku_sp', [...spTypes]);
+  }
+  renderSetup();
+
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+    window.scrollTo(0,0);
+  }
+
+  // ---------- choices ----------
+  // specials = よくある まちがい（2つまで いれる）, others = そのほか
+  function makeChoices(ans, specials, others){
+    const set = new Set([ans]);
+    const ok = n => Number.isInteger(n) && n !== ans && !set.has(n);
+    shuffle(specials.filter(ok)).slice(0, 2).forEach(n => set.add(n));
+    for (const n of shuffle(others.filter(ok))){ if (set.size >= 4) break; set.add(n); }
+    let x = 1; while (set.size < 4){ if (ok(ans + x)) set.add(ans + x); x = x > 0 ? -x : -x + 1; }
+    return shuffle([...set]);
+  }
+
+  // ---------- ていがくねん：九九 ----------
+  let deck = [], recent = [];
+  function buildDeck(){
+    const d = [];
+    selDans.forEach(a => { for (let b = 1; b <= 9; b++){
+      let w = nigate.has(a) ? 3 : 1;
+      if ((weak[a + '-' + b] || 0) > 0) w += 1;
+      for (let i = 0; i < w; i++) d.push([a, b]);
+    }});
+    return shuffle(d);
+  }
+  function genLow(){
+    const gap = Math.min(6, selDans.size * 9 - 1);
+    if (!deck.length) deck = buildDeck();
+    const free = ([a, b]) => !recent.slice(-gap).includes(a + '-' + b);
+    let idx = deck.findIndex(free);
+    if (idx < 0){ deck = buildDeck(); idx = deck.findIndex(free); }
+    if (idx < 0) idx = 0;
+    const [a, b] = deck.splice(idx, 1)[0];
+    const ans = a * b;
+    const pos = [a*(b+1), a*(b-1), (a+1)*b, (a-1)*b, ans+1, ans-1, ans+10, ans-10,
+                 +String(ans).split('').reverse().join(''), (a+1)*(b+1) - 1].filter(n => n > 0 && n <= 99);
+    return {
+      key: a + '-' + b, weakKey: a + '-' + b, ans,
+      html: `${a}${X}${b} <span class="eq">=</span> ?`, cls: '',
+      plain: `${a}×${b}=${ans}`,
+      choices: makeChoices(ans, [], pos),
+      explain: [yomi[a][b]]
+    };
+  }
+
+  // ---------- こうがくねん：ひっさん ----------
+  function stepsBy1(a, b){
+    const ds = String(a).split('').reverse().map(Number);
+    let carry = 0; const out = [];
+    ds.forEach((d, i) => {
+      const p = d * b, s = p + carry, last = i === ds.length - 1;
+      let t = `${d}×${b}＝${p}` + (carry ? `、＋${carry}で ${s}` : '');
+      if (!last) t += Math.floor(s / 10) ? ` → ${s % 10}を かいて ${Math.floor(s / 10)}くりあがり` : ` → ${s % 10}を かく`;
+      out.push(t);
+      carry = Math.floor(s / 10);
+    });
+    return out;
+  }
+  function noCarry(a, b){        // くりあがりを わすれた こたえ
+    const ds = String(a).split('').reverse().map(Number);
+    let v = 0;
+    ds.forEach((d, i) => { const p = d * b; v += (i === ds.length - 1 ? p : p % 10) * 10 ** i; });
+    return v;
+  }
+  const vert = (a, b) => `<div class="hs"><div>${a}</div><div class="r2"><span class="x">×</span><span>${b}</span></div><div class="line"></div><div class="qm">?</div></div>`;
+
+  function genHigh(){
+    const t = pick([...highTypes]);
+    let a, b;
+    if (t === '21'){ a = rnd(12, 99); b = rnd(2, 9); }
+    else if (t === '22'){ a = rnd(12, 99); b = rnd(12, 99); }
+    else { a = rnd(102, 999); b = rnd(2, 9); }
+    if (a % 10 === 0) a++;
+    if (t === '22' && b % 10 === 0) b++;
+    const ans = a * b;
+    let explain, specials, html, cls = '';
+    if (t === '22'){
+      const b1 = b % 10, b10 = Math.floor(b / 10), p1 = a * b1, p2 = a * b10 * 10;
+      explain = [`${a}×${b1}＝${p1}`, `${a}×${b10*10}＝${p2}（1けた ずらす）`, `${p1}＋${p2}＝${ans}`];
+      specials = [p1 + a * b10, ans + 10, ans - 10, ans + 100, ans - 100];  // ずらしわすれ など
+      html = '<span class="tag">ひっさん</span><br>' + vert(a, b);
+    } else {
+      explain = stepsBy1(a, b).concat(t === '31' ? [`こたえ ${ans}`] : []);
+      specials = [noCarry(a, b), ans + 10, ans - 10];
+      if (t === '31'){ html = '<span class="tag">ひっさん</span><br>' + vert(a, b); }
+      else { html = `${a}${X}${b} <span class="eq">=</span> ?`; }
+    }
+    const others = [ans + 1, ans - 1, ans + a, ans - a, ans + 100, ans - 100, ans + 20, ans - 20].filter(n => n > 0);
+    return { key: `${a}x${b}`, ans, html, cls, plain: `${a}×${b}=${ans}`,
+             choices: makeChoices(ans, specials.filter(n => n > 0), others), explain };
+  }
+
+  // ---------- ていがくねん：たしざん・ひきざん ----------
+  const vertOp = (a, op, b) => `<div class="hs"><div>${a}</div><div class="r2"><span class="x">${op}</span><span>${b}</span></div><div class="line"></div><div class="qm">?</div></div>`;
+  function colAdd(a, b){
+    const a1 = a % 10, b1 = b % 10, s1 = a1 + b1, c = s1 >= 10 ? 1 : 0;
+    const a10 = Math.floor(a / 10), b10 = Math.floor(b / 10);
+    return [`1のくらい：${a1}＋${b1}＝${s1}` + (c ? ` → ${s1 % 10}を かいて 1くりあがり` : ''),
+            `10のくらい：${a10}＋${b10}` + (c ? '＋1' : '') + `＝${a10 + b10 + c}`, `こたえ ${a + b}`];
+  }
+  function colSub(a, b){
+    const a1 = a % 10, b1 = b % 10, br = a1 < b1;
+    const a10 = Math.floor(a / 10), b10 = Math.floor(b / 10);
+    return [br ? `1のくらい：${a1}から ${b1}は ひけないので 10のくらいから 1かりて ${a1 + 10}−${b1}＝${a1 + 10 - b1}`
+               : `1のくらい：${a1}−${b1}＝${a1 - b1}`,
+            `10のくらい：` + (br ? `${a10}−1−${b10}＝${a10 - 1 - b10}` : `${a10}−${b10}＝${a10 - b10}`), `こたえ ${a - b}`];
+  }
+  function genAdd(){
+    const t = pick([...addTypes]);
+    let a, b, explain, html;
+    if (t === 'a1'){ a = rnd(1, 8); b = rnd(1, 9 - a); explain = [`${a}と ${b}で ${a + b}`]; }
+    else if (t === 'a2'){
+      a = rnd(2, 9); b = rnd(Math.max(2, 10 - a), 9);
+      const need = 10 - a;
+      explain = [`${a}は あと ${need}で 10`, `${b}を ${need}と ${b - need}に わける`, `10と ${b - need}で ${a + b}`];
+    } else {
+      if (Math.random() < .5){ a = rnd(11, 89); b = rnd(2, 9); } else { a = rnd(11, 79); b = rnd(11, 99 - a); }
+      if (a + b > 99) b = 99 - a;
+      explain = colAdd(a, b);
+    }
+    const ans = a + b;
+    html = (t === 'a3' && b >= 10) ? '<span class="tag">ひっさん</span><br>' + vertOp(a, '＋', b) : `${a}<span class="x">＋</span>${b} <span class="eq">=</span> ?`;
+    const specials = t === 'a3' ? [ans - 10, ans + 10, (a % 10 + b % 10) % 10 + (Math.floor(a / 10) + Math.floor(b / 10)) * 10] : [ans + 1, ans - 1];
+    return { key: `${a}+${b}`, ans, html, cls: '', plain: `${a}＋${b}=${ans}`,
+             choices: makeChoices(ans, specials.filter(n => n >= 0), [ans + 2, ans - 2, ans + 10, ans - 10, ans + 1, ans - 1].filter(n => n >= 0)), explain };
+  }
+  function genSub(){
+    const t = pick([...subTypes]);
+    let a, b, explain;
+    if (t === 's1'){
+      if (Math.random() < .5){ a = rnd(2, 9); b = rnd(1, a); }
+      else { const o = rnd(1, 9); a = 10 + o; b = rnd(1, o); }
+      explain = [`${a}から ${b}を とると ${a - b}`];
+    } else if (t === 's2'){
+      const o = rnd(1, 8); a = 10 + o; b = rnd(o + 1, 9);
+      explain = [`${a}を 10と ${o}に わける`, `10−${b}＝${10 - b}`, `${10 - b}と ${o}で ${a - b}`];
+    } else {
+      a = rnd(31, 99); b = rnd(11, a - 10);
+      if (a % 10 >= b % 10 && Math.random() < .6){ b = Math.floor(b / 10) * 10 + rnd(Math.min(9, a % 10 + 1), 9); if (b >= a) b -= 10; }
+      explain = colSub(a, b);
+    }
+    const ans = a - b;
+    const html = t === 's3' ? '<span class="tag">ひっさん</span><br>' + vertOp(a, '−', b) : `${a}<span class="x">−</span>${b} <span class="eq">=</span> ?`;
+    const specials = t === 's3' ? [ans + 10, ans - 10, Math.abs(a % 10 - b % 10) + (Math.floor(a / 10) - Math.floor(b / 10)) * 10] : [ans + 1, ans - 1, a + b];
+    return { key: `${a}-${b}`, ans, html, cls: '', plain: `${a}−${b}=${ans}`,
+             choices: makeChoices(ans, specials.filter(n => n >= 0), [ans + 2, ans - 2, ans + 10, ans - 10, ans + 1, ans - 1].filter(n => n >= 0)), explain };
+  }
+
+  // ---------- スペシャリスト：中1 ----------
+  function signRule(nums, ans){
+    const neg = nums.filter(n => n < 0).length;
+    const abs = nums.map(n => Math.abs(n)).join('×');
+    return [`マイナスが ${neg}こ → ${neg % 2 ? 'こたえは マイナス（−）' : 'こたえは プラス（＋）'}`,
+            `${abs}＝${Math.abs(ans)} だから ${fmt(ans)}`];
+  }
+  function genSp(){
+    const t = pick([...spTypes]);
+    if (t === 'pm'){
+      let a = sgn() * rnd(2, 12), b = sgn() * rnd(2, 12);
+      if (a > 0 && b > 0){ if (Math.random() < .5) a = -a; else b = -b; }
+      const ans = a * b;
+      return { key: `${a}x${b}`, ans, html: `${par(a)}${X}${par(b)} <span class="eq">=</span> ?`, cls: 'mid',
+               plain: `${par(a)}×${par(b)}=${fmt(ans)}`,
+               choices: makeChoices(ans, [-ans], [ans + a, ans - a, ans + b, -ans + b, ans + 1, -ans - 1, a + b, -(a + b)]),
+               explain: signRule([a, b], ans) };
+    }
+    if (t === 'three'){
+      let n = [sgn() * rnd(1, 6), sgn() * rnd(2, 6), sgn() * rnd(2, 5)];
+      if (n.every(v => v > 0)) n[rnd(0, 2)] *= -1;
+      const ans = n[0] * n[1] * n[2];
+      return { key: n.join('x'), ans, html: `${n.map(par).join(X)} <span class="eq">=</span> ?`, cls: 'long',
+               plain: `${n.map(par).join('×')}=${fmt(ans)}`,
+               choices: makeChoices(ans, [-ans], [ans + n[2], ans - n[2], -ans + n[0], ans * 2, n[0] * n[1], -(n[0] * n[1])]),
+               explain: signRule(n, ans) };
+    }
+    // 累乗
+    const kind = pick(['(-n)2', '-n2', '(-n)3', 'n2', '-n3']);
+    const e = kind.endsWith('3') ? 3 : 2;
+    const base = e === 3 ? rnd(2, 5) : rnd(2, 9);
+    const p = base ** e;
+    let html, ans, explain, plainQ;
+    const rep = (v, k) => Array(k).fill(v).join('×');
+    if (kind === '(-n)2' || kind === '(-n)3'){
+      ans = e === 2 ? p : -p;
+      html = `(${M}${base})<sup>${e}</sup>`; plainQ = `(${M}${base})${e === 2 ? '²' : '³'}`;
+      explain = [`(${M}${base})を ${e}かい かける`, `${rep('(' + M + base + ')', e)}＝${fmt(ans)}`];
+    } else if (kind === '-n2' || kind === '-n3'){
+      ans = -p;
+      html = `${M}${base}<sup>${e}</sup>`; plainQ = `${M}${base}${e === 2 ? '²' : '³'}`;
+      explain = [`かっこが ないので ${base}だけを ${e}かい かける`, `${M}(${rep(base, e)})＝${fmt(ans)}`];
+    } else {
+      ans = p;
+      html = `${base}<sup>${e}</sup>`; plainQ = `${base}²`;
+      explain = [`${base}を 2かい かける`, `${rep(base, 2)}＝${ans}`];
+    }
+    return { key: kind + base, ans, html: html + ' <span class="eq">=</span> ?', cls: '',
+             plain: `${plainQ}=${fmt(ans)}`,
+             choices: makeChoices(ans, [-ans, base * e, -base * e], [ans + base, ans - base, ans + 1, -ans + 1]),
+             explain };
+  }
+
+  // ---------- game ----------
+  let score, ok, total, combo, maxCombo, missed, left, timer, cur, locked;
+
+  function pickQuestion(){
+    if (level === 'low' && lowMode !== 'kuku'){
+      const gen = lowMode === 'add' ? genAdd : genSub; let q;
+      for (let i = 0; i < 15; i++){ q = gen(); if (!recent.includes(q.key)) break; }
+      recent.push(q.key); if (recent.length > 10) recent.shift(); return q;
+    }
+    if (level === 'low'){ const q = genLow(); recent.push(q.key); if (recent.length > 10) recent.shift(); return q; }
+    const gen = level === 'high' ? genHigh : genSp;
+    let q;
+    for (let i = 0; i < 15; i++){ q = gen(); if (!recent.includes(q.key)) break; }
+    recent.push(q.key); if (recent.length > 10) recent.shift();
+    return q;
+  }
+
+  function nextQ(){
+    cur = pickQuestion();
+    const qe = $('q');
+    qe.className = 'q ' + (cur.cls || '');
+    qe.innerHTML = cur.html;
+    $('reading').innerHTML = '';
+    $('msg').textContent = '';
+    const ch = $('choices'); ch.innerHTML = '';
+    ch.classList.toggle('small', cur.choices.some(n => fmt(n).length > 3));
+    cur.choices.forEach(n => {
+      const btn = document.createElement('button');
+      btn.className = 'ch'; btn.textContent = fmt(n); btn.dataset.v = n;
+      btn.addEventListener('pointerdown', e => { e.preventDefault(); answer(n, btn); });
+      ch.appendChild(btn);
+    });
+    locked = false;
+  }
+
+  function floatText(txt, color){
+    const f = document.createElement('div');
+    f.className = 'float'; f.textContent = txt; f.style.color = color;
+    $('qbox').appendChild(f); setTimeout(() => f.remove(), 700);
+  }
+
+  function answer(n, btn){
+    if (locked || left <= 0) return;
+    locked = true; total++;
+    const k = cur.weakKey;
+    if (n === cur.ans){
+      ok++; combo++; maxCombo = Math.max(maxCombo, combo);
+      const base = level === 'low' ? 10 : level === 'sp' ? 15 : 30;
+      const pts = base + Math.min(combo - 1, 10) * Math.round(base / 5);
+      score += pts;
+      if (k) weak[k] = Math.max(0, (weak[k] || 0) - 1);
+      btn.classList.add('ok');
+      sfx.ok(combo);
+      floatText('+' + pts, 'var(--green)');
+      const c = $('combo');
+      c.textContent = combo >= 2 ? `🔥 ${combo} コンボ！` : '';
+      c.classList.remove('fire'); void c.offsetWidth; c.classList.add('fire');
+      $('scoreNow').textContent = score + 'てん';
+      setTimeout(nextQ, 160);
+    } else {
+      combo = 0; $('combo').textContent = '';
+      if (k) weak[k] = Math.min(3, (weak[k] || 0) + 2);
+      missed.add(cur.plain);
+      sfx.ng();
+      btn.classList.add('ng');
+      [...$('choices').children].forEach(b => { if (+b.dataset.v === cur.ans) b.classList.add('ok'); b.disabled = true; });
+      $('qbox').classList.remove('shake'); void $('qbox').offsetWidth; $('qbox').classList.add('shake');
+      $('reading').innerHTML = cur.explain.map(t => `<div>${t}</div>`).join('');
+      $('msg').textContent = `こたえは ${fmt(cur.ans)}`;
+      $('msg').style.color = 'var(--pink)';
+      setTimeout(nextQ, level === 'low' && lowMode !== 'kuku' ? (cur.explain.length > 1 ? 2400 : 1300) : LEVELS[level].wait);   // こたえと とき方を しっかり みせる
+    }
+  }
+
+  function startGame(){
+    score = 0; ok = 0; total = 0; combo = 0; maxCombo = 0; missed = new Set(); deck = []; recent = [];
+    left = timeLimit;
+    $('scoreNow').textContent = '0てん'; $('combo').textContent = '';
+    $('timeNow').textContent = left; $('timeNow').classList.remove('hurry');
+    $('bar').style.width = '100%';
+    show('count');
+    let c = 3;
+    const cn = $('countNum');
+    const step = () => {
+      if (c === 0){
+        sfx.go(); show('game'); nextQ();
+        const t0 = Date.now();
+        timer = setInterval(() => {
+          const rem = Math.max(0, timeLimit - (Date.now() - t0) / 1000);
+          const sec = Math.ceil(rem);
+          if (sec !== left){ left = sec; if (left <= 5 && left > 0) sfx.tick(); }
+          $('timeNow').textContent = sec;
+          $('timeNow').classList.toggle('hurry', sec <= 10);
+          $('bar').style.width = (rem / timeLimit * 100) + '%';
+          if (rem <= 0){ left = 0; clearInterval(timer); endGame(); }
+        }, 100);
+        return;
+      }
+      cn.textContent = c; cn.style.animation = 'none'; void cn.offsetWidth; cn.style.animation = '';
+      sfx.tick(); c--; setTimeout(step, 800);
+    };
+    step();
+  }
+
+  function confetti(){
+    const colors = ['#ff5c8a','#ffd23f','#2ec4a6','#3a86ff','#8e5cf7','#ff9f1c'];
+    for (let i = 0; i < 60; i++){
+      const p = document.createElement('div');
+      p.className = 'confetti';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.background = colors[i % colors.length];
+      p.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+      p.style.animationDelay = Math.random() * .5 + 's';
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 4000);
+    }
+  }
+
+  function endGame(){
+    store.set('kuku_weak', weak);
+    const key = keyOf();
+    const prev = bests[key] || 0;
+    const isRec = score > prev && score > 0;
+    if (isRec){ bests[key] = score; store.set('kuku_bests', bests); }
+
+    $('rLv').textContent = level === 'low' ? 'ていがくねん（' + LOW_NAMES[lowMode] + '）' : LEVELS[level].name;
+    $('rScore').textContent = score;
+    $('rOk').textContent = ok;
+    const rate = total ? Math.round(ok / total * 100) : 0;
+    $('rRate').textContent = rate + '%';
+    $('rCombo').textContent = maxCombo;
+    const perMin = ok / timeLimit * 60;
+    const th = LEVELS[level].stars;
+    const stars = perMin >= th[0] ? 3 : perMin >= th[1] ? 2 : perMin >= th[2] ? 1 : 0;
+    $('stars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('record').style.display = isRec ? 'block' : 'none';
+
+    $('rMissLabel').textContent = level === 'low' && lowMode === 'kuku' ? 'まちがえた もんだい（つぎ よく でるよ）' : 'まちがえた もんだい';
+    const m = $('rMiss'); m.innerHTML = '';
+    if (missed.size === 0){
+      m.innerHTML = '<span class="none">まちがい ゼロ！すごい！</span>';
+    } else {
+      missed.forEach(t => { const s = document.createElement('span'); s.textContent = t; m.appendChild(s); });
+    }
+    show('result');
+    if (isRec){ sfx.rec(); confetti(); } else sfx.end();
+  }
+
+  window.__kuku = { genLow, genHigh, genSp, genAdd, genSub,
+    set: (l, m, ty) => { level = l; if (m) lowMode = m; if (ty) { const S = { high: highTypes, sp: spTypes, add: addTypes, sub: subTypes }[l === 'low' ? m : l]; S.clear(); ty.forEach(x => S.add(x)); } } };
+  $('go').onclick = () => { if (canStart()) startGame(); };
+  $('again').onclick = startGame;
+  $('toTop').onclick = () => { renderSetup(); show('start'); };
+})();
+</script>
+<script>
+  (function(){ var mb = document.getElementById('menuback');
+    var upd = function(){ var on = document.getElementById('start'); mb.style.display = on && on.classList.contains('on') ? '' : 'none'; };
+    new MutationObserver(upd).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] }); upd(); })();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js', { scope: '../' }).catch(function(){});
+</script>
+</body>
+</html>

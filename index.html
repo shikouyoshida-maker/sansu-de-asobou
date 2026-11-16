@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>さんすうで遊ぼう</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="さんすうで遊ぼう">
+<meta name="theme-color" content="#ffd23f">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;min-height:100%}
+  body{font-family:"M PLUS Rounded 1c",system-ui,sans-serif;color:#3a2c4a;background:linear-gradient(160deg,#fff6d6,#e3f0ff);
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);min-height:100vh;user-select:none;-webkit-user-select:none}
+  .wrap{max-width:480px;margin:0 auto;padding:24px 16px;display:flex;flex-direction:column;gap:16px}
+  h1{text-align:center;font-size:36px;margin:20px 0 0;font-weight:800}
+  h1 span{color:#ff5c8a}
+  p{text-align:center;color:#7a6a8a;margin:0 0 8px}
+  a.app{display:flex;align-items:center;gap:16px;text-decoration:none;color:#fff;border-radius:24px;padding:22px 18px}
+  a.app:active{transform:translateY(4px);box-shadow:none}
+  a.app .ic{font-size:44px}
+  a.app b{display:block;font-size:21px}
+  a.app small{display:block;font-size:14px;opacity:.92;margin-top:2px}
+  .a1{background:#ff5c8a;box-shadow:0 6px 0 #d63c69}
+  .a2{background:#3a86ff;box-shadow:0 6px 0 #2560c4}
+  .ver{font-size:12px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>さんすうで<span>遊ぼう</span></h1>
+  <p>あそびたい ゲームを えらんでね</p>
+  <a class="app a1" href="keisan/"><span class="ic">⏱️</span><span><b>けいさん タイムアタック</b><small>九九・たしざん・ひきざん・ひっさん</small></span></a>
+  <a class="app a2" href="waru/"><span class="ic">➗</span><span><b>わりざん マスター</b><small>まなぶ・タイムアタック・まぜまぜ</small></span></a>
+  <p class="ver">ネットに つながって いなくても あそべるよ</p>
+</div>
+<script>
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
